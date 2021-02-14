@@ -76,20 +76,20 @@ after_initialize do
     anon_user = shadow || AnonymousShadowCreator.get(user)
 
     # The client-side UI seems to get upset if the returned post was made by
-    # "another" user, and will refuse to clear the field.  Instead, we act as
-    # though this is a queued post, and that's enough to reset the UI.  It also
-    # happens to give us an opportunity to point out that the post has been
-    # automatically anonymized!  (See NewPostManager.perform_create_post for the
-    # logic we're replicating here.)
-    result = NewPostResult.new(:enqueued)
+    # "another" user, and will refuse to clear the field.  
+    # We leverage the route_to functionality to explicitly route back to the post.
+    # It also happens to give us an opportunity to point out that the post has been
+    # automatically anonymized!  
+    #
+    result = NewPostResult.new(:create_post)
     creator = PostCreator.new(anon_user, args)
     post = creator.create
     result.check_errors_from(creator)
 
     if result.success?
       result.post = post
-      result.pending_count = 0
-      result.reason = :force_anonymous_post
+      result.message = "Your post has been anonymized."
+      result.route_to = "/t/#{post.topic.slug}/#{post.topic.id}/#{post.post_number}"
     else
       user.flag_linked_posts_as_spam if creator.spam?
     end

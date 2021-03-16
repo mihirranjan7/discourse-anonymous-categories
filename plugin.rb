@@ -1,6 +1,6 @@
 # name: discourse-anonymous-categories
 # about: Always-anonymous categories for Discourse
-# version: 0.3.0
+# version: 0.4.0
 # authors: Jared Reisinger and Communiteq
 # url: https://github.com/communiteq/discourse-anonymous-categories
 
@@ -40,6 +40,23 @@ after_initialize do
     end
   end
 
+  class ::AnonymousShadowCreator
+    def get_bypass_sitesettings()
+      return unless user
+      return if SiteSetting.must_approve_users? && !user.approved?
+
+      shadow = user.shadow_user
+
+      if shadow && (shadow.post_count + shadow.topic_count) > 0 &&
+          shadow.last_posted_at &&
+          shadow.last_posted_at < SiteSetting.anonymous_account_duration_minutes.minutes.ago
+          shadow = nil
+      end
+
+      shadow || create_shadow!
+    end
+  end
+
   @anon_handler = lambda do |manager|
     if !SiteSetting.anonymous_categories_enabled
       return nil
@@ -61,28 +78,18 @@ after_initialize do
       return nil
     end
 
-    # Bypass the global anonymous setting for this post/category in order to
-    # force it.
-    shadow = nil
-    if (shadow_id = user.custom_fields["shadow_id"].to_i) > 0
-      shadow = User.find_by(id: shadow_id)
-
-      if shadow && shadow.post_count > 0 &&
-          shadow.last_posted_at < SiteSetting.anonymous_account_duration_minutes.minutes.ago
-        shadow = nil
-      end
-    end
-
-    anon_user = shadow || AnonymousShadowCreator.get(user)
+    creator = AnonymousShadowCreator.new(user)
+    anon_user = creator.get_bypass_sitesettings()
 
     # The client-side UI seems to get upset if the returned post was made by
-    # "another" user, and will refuse to clear the field.  
+    # "another" user, and will refuse to clear the field.
     # We leverage the route_to functionality to explicitly route back to the post.
     # It also happens to give us an opportunity to point out that the post has been
-    # automatically anonymized!  
+    # automatically anonymized!
     #
     result = NewPostResult.new(:create_post)
     creator = PostCreator.new(anon_user, args)
+
     post = creator.create
     result.check_errors_from(creator)
 

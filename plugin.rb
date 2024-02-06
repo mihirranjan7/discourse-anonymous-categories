@@ -1,7 +1,7 @@
 # name: discourse-anonymous-categories
 # about: Always-anonymous categories for Discourse
-# version: 0.4.0
-# authors: Jared Reisinger and Communiteq
+# version: 0.5.0
+# authors: Communiteq
 # url: https://github.com/communiteq/discourse-anonymous-categories
 
 enabled_site_setting :anonymous_categories_enabled

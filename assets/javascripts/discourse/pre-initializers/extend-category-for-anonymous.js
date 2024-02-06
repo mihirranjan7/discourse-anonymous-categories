@@ -1,3 +1,4 @@
+import { computed } from "@ember/object";
 import Category from 'discourse/models/category';
 
 export default {
@@ -6,11 +7,11 @@ export default {
 
   initialize() {
     Category.reopen({
-      force_anonymous_posting: Ember.computed(
+      force_anonymous_posting: computed(
         "custom_fields.force_anonymous_posting",
         {
-          get(fieldName) {
-            return Ember.get(this.custom_fields, fieldName) == "true";
+          get() {
+            return this?.custom_fields?.force_anonymous_posting === "true";
           },
         }
       ),

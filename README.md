@@ -16,6 +16,10 @@ If the category could not normally be posted in by an anonymous user, turning on
 
 In order to trick the UI, the post is treated as a "queued" post.  Otherwise, the Discourse front-end doesn't see the anonymous post as the same as the one from the user, and thus doesn't clear out the post editor.  By returning a "this post is queued" result, the editor behaves a bit better.  Yes, this can be somewhat surprising.  On the other hand, it gives us a chance to inform the user that the post was made anonymously, which they might not otherwise expect.
 
+## Discuss
+
+You can discuss this plugin on its [Discourse Meta topic](https://meta.discourse.org/t/always-anonymous-categories-plugin/41110)
+
 ## Acknowledgements
 
 The first version of this plugin was authored by [Jared Reisinger](https://meta.discourse.org/u/jaredreisinger/summary).
